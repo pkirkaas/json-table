@@ -78,7 +78,7 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
   );
   const [pagination, setPagination] = useState<MRT_PaginationState>({
     pageIndex: initialState?.pagination?.pageIndex ?? 0,
-    pageSize: initialState?.pagination?.pageSize ?? 10,
+    pageSize: initialState?.pagination?.pageSize ?? 100,
   });
 
   /**
