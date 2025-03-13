@@ -4,7 +4,7 @@ import {openrouterModels} from "@/data/openrouter-models";
 
 export default function Home() {
   return (
-    <div className="max-w-[1280px] mx-auto p-4">
+    <div className="mx-auto p-4">
       <main>
         <h1 className="text-2xl font-bold mb-4">The Main</h1>
         <DynamicTable data={openrouterModels} />
