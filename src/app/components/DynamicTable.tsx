@@ -1,4 +1,5 @@
 // src/components/DynamicTable.tsx
+'use client' 
 import React, { useMemo, useState, ReactElement } from 'react';
 import {
   MaterialReactTable,
@@ -59,7 +60,7 @@ type FilterVariantType =
  * @param {DynamicTableProps} props - Component props
  * @returns {ReactElement} The rendered table component
  */
-const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initialState }): ReactElement => {
+export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initialState }): ReactElement => {
   // Handle empty data case
   if (!data || data.length === 0) {
     return <Typography variant="body1">No data available</Typography>;
