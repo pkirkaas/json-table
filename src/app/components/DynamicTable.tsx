@@ -302,7 +302,11 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
     enableBottomToolbar: true,
     enableTopToolbar: true,
     muiTableContainerProps: { 
-      sx: { maxHeight: '600px' } 
+      sx: { 
+        height: '100%',
+        maxHeight: 'none',
+        overflow: 'auto'
+      } 
     },
     state: {
       columnVisibility,
@@ -390,13 +394,24 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
   const table = useMaterialReactTable(tableOptions);
 
   return (
-    <Box sx={{ width: '100%' }}>
+    <Box sx={{ 
+      width: '100%',
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column'
+    }}>
       {title && (
         <Typography variant="h6" sx={{ mb: 2 }}>
           {title}
         </Typography>
       )}
-      <MaterialReactTable table={table} />
+      <MaterialReactTable 
+        table={table} 
+        sx={{
+          flex: 1,
+          minHeight: 0,
+        }}
+      />
     </Box>
   );
 };
