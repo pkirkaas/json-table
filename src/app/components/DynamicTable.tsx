@@ -240,7 +240,12 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
     if (!data || data.length === 0) return [];
     
     const firstRow = data[0];
-    return Object.keys(firstRow).map((key) => {
+    const keys = Object.keys(firstRow);
+    
+    // Calculate a reasonable default size for each column
+    const defaultColumnSize = Math.max(150, Math.floor(1200 / keys.length));
+    
+    return keys.map((key) => {
       // Find first non-null value for this column to determine type
       const sampleValue = data.find(row => row[key] !== null && row[key] !== undefined)?.[key] ?? firstRow[key];
       const filterVariant = getFilterVariant(key, sampleValue);
@@ -272,8 +277,23 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
               return JSON.stringify(valueA).localeCompare(JSON.stringify(valueB));
             }
           : 'alphanumeric', // Use built-in sorter for primitives and null
-        // Set minimum width for columns
-        minSize: 150,
+        // Updated sizing properties
+        minSize: 100,
+        maxSize: 1000,
+        size: defaultColumnSize, // Set a reasonable default size
+        
+        // Make sure columns grow/shrink appropriately
+        muiTableHeadCellProps: {
+          sx: {
+            fontWeight: 'bold',
+            flex: '1 0 auto',
+          },
+        },
+        muiTableBodyCellProps: {
+          sx: {
+            flex: '1 0 auto',
+          },
+        },
       };
     });
   }, [data]);
@@ -295,11 +315,13 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
     enablePagination: true,
     enableBottomToolbar: true,
     enableTopToolbar: true,
+    layoutMode: 'grid', // Use grid layout for better column distribution
     muiTableContainerProps: { 
       sx: { 
         height: '100%',
         maxHeight: 'none',
-        overflow: 'auto'
+        overflow: 'auto',
+        width: '100%', // Ensure full width
       } 
     },
     muiTablePaperProps: { 
@@ -308,8 +330,20 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
         minHeight: 0,
         height: '100%',
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        width: '100%', // Ensure full width
       }
+    },
+    muiTableProps: {
+      sx: {
+        tableLayout: 'fixed', // Fixed layout ensures columns respect their widths
+        width: '100%',
+      }
+    },
+    defaultColumn: {
+      minSize: 100, // Minimum column width
+      maxSize: 1000, // Maximum column width
+      size: 150, // Default column width
     },
     state: {
       columnVisibility,
@@ -408,7 +442,25 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
           {title}
         </Typography>
       )}
-      <MaterialReactTable table={table} />
+      <MaterialReactTable 
+        table={table} 
+        className="dynamic-table-with-borders"
+      />
+      
+      {/* Add custom styles for the table borders */}
+      <style jsx global>{`
+        .dynamic-table-with-borders .MuiTableCell-root {
+          border-right: 1px solid rgba(244, 67, 54, 0.2); /* Light red border */
+        }
+        
+        .dynamic-table-with-borders .MuiTableCell-root:last-child {
+          border-right: none;
+        }
+        
+        .dynamic-table-with-borders .MuiTableHead-root .MuiTableCell-root {
+          border-right: 1px solid rgba(244, 67, 54, 0.3); /* Slightly darker red for headers */
+        }
+      `}</style>
     </Box>
   );
 };
