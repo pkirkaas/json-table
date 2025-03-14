@@ -16,6 +16,7 @@
     "@mui/icons-material": "^6.4.7",
     "@mui/material": "^6.4.7",
     "@mui/x-date-pickers": "^7.27.3",
+    "date-fns":"*",
     "material-react-table": "^3.2.1",
     "next": "15.2.2",
     "react": "^19.0.0",
