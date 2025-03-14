@@ -509,7 +509,9 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
       )}
       <MaterialReactTable 
         table={table} 
-        className="dynamic-table-with-borders"
+        muiTableProps={{
+          className: "dynamic-table-with-borders"
+        }}
       />
       
       {/* Add custom styles for the table borders */}
