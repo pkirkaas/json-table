@@ -3,3 +3,6 @@
 vim: true
 read: 
   - .aider.chat.md
+#add:
+#  - "src\\app\\components\\DynamicTable.tsx"
+#  - "DynamicTable.tsx"
