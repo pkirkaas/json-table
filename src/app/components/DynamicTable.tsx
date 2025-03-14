@@ -277,7 +277,7 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
             // Compare stringified objects
             return JSON.stringify(valueA).localeCompare(JSON.stringify(valueB));
           } : 
-          undefined,
+          'alphanumeric', // Use built-in sorter for primitives
         // Set minimum width for columns
         minSize: 150,
       };
