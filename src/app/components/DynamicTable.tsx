@@ -202,7 +202,12 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
             maxWidth: '100%',
             overflow: 'hidden', 
             textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap'
+            // Change from nowrap to normal to allow wrapping
+            whiteSpace: 'normal',
+            // Limit to 3 lines of text
+            display: '-webkit-box',
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: 'vertical'
           }}
         >
           {stringValue}
@@ -265,8 +270,11 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
     const firstRow = data[0];
     const keys = Object.keys(firstRow);
     
-    // Calculate a reasonable default size for each column
-    const defaultColumnSize = Math.max(120, Math.floor(1000 / keys.length));
+    // Calculate a reasonable default size for each column based on available space
+    // Assume a minimum width per column, but distribute space evenly
+    const availableWidth = typeof window !== 'undefined' ? window.innerWidth - 100 : 1200; // Approximate available width
+    const maxColumnWidth = Math.min(300, Math.floor(availableWidth / keys.length));
+    const minColumnWidth = 80;
     
     return keys.map((key) => {
       // Find first non-null value for this column to determine type
@@ -295,10 +303,14 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
         )
       );
       
-      // Use the larger of header or content, but cap it
+      // Cap the estimated size more aggressively
       const estimatedSize = Math.min(
-        Math.max(headerLength, contentMaxLength, 80),
-        300 // Cap at 300px initially
+        Math.max(
+          Math.min(headerLength, 200), // Cap header length
+          Math.min(contentMaxLength, 250), // Cap content length
+          minColumnWidth
+        ),
+        maxColumnWidth // Enforce max width based on available space
       );
       
       return {
@@ -321,19 +333,20 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
               return JSON5.stringify(valueA).localeCompare(JSON5.stringify(valueB));
             }
           : 'alphanumeric', // Use built-in sorter for primitives and null
-        // Updated sizing properties with content-based estimation
-        minSize: 80,
-        maxSize: 500,
+        // Updated sizing properties with stricter limits
+        minSize: minColumnWidth,
+        maxSize: maxColumnWidth * 2, // Allow resizing to be larger, but not excessive
         size: estimatedSize,
         
-        // Cell props for better text handling
+        // Update cell props to handle wrapping
         muiTableHeadCellProps: {
           sx: {
             fontWeight: 'bold',
+            padding: '8px',
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
-            padding: '8px',
+            borderRight: '1px solid rgba(244, 67, 54, 0.3)', // Add direct border styling
           },
         },
         muiTableBodyCellProps: {
@@ -341,7 +354,8 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
             padding: '8px',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
+            whiteSpace: 'normal', // Allow wrapping
+            borderRight: '1px solid rgba(244, 67, 54, 0.2)', // Add direct border styling
           },
         },
       };
@@ -353,7 +367,7 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
     columns,
     data,
     enableColumnResizing: true,
-    columnResizeMode: 'onChange',
+    columnResizeMode: 'onEnd', // Change to onEnd for better performance
     enableColumnFilters: true,
     enableFilters: true,
     enableSorting: true,
@@ -366,15 +380,16 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
     enableBottomToolbar: true,
     enableTopToolbar: true,
     
-    // Use 'semantic' layout mode for better content-based sizing
-    layoutMode: 'semantic',
+    // Change layout mode to 'grid' for better width control
+    layoutMode: 'grid',
     
     muiTableContainerProps: { 
       sx: { 
         height: '100%',
         maxHeight: 'none',
         overflow: 'auto',
-        width: '100%', // Ensure full width
+        width: '100%',
+        maxWidth: '100%', // Ensure table doesn't exceed container
       } 
     },
     muiTablePaperProps: { 
@@ -384,30 +399,42 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        width: '100%', // Ensure full width
+        width: '100%',
+        maxWidth: '100%', // Ensure paper doesn't exceed container
+        overflow: 'hidden', // Prevent overflow
       }
     },
     muiTableProps: {
       sx: {
         width: '100%',
-        tableLayout: 'auto', // Change to 'auto' to better respect content width
+        maxWidth: '100%', // Ensure table doesn't exceed container
+        tableLayout: 'fixed', // Use fixed layout for better column width control
+        borderCollapse: 'separate', // Required for border styling
+        borderSpacing: 0,
       },
       className: "dynamic-table-with-borders"
     },
     
     // Update default column settings
     defaultColumn: {
-      minSize: 80, // Smaller minimum to allow more flexibility
-      maxSize: 1000,
+      minSize: 80,
+      maxSize: 500,
       size: 150,
       
-      // Add cell props to all columns for better text handling
+      // Add cell props to all columns for better text handling and borders
       muiTableBodyCellProps: {
         sx: {
           padding: '8px',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
+          whiteSpace: 'normal', // Allow wrapping
+          borderRight: '1px solid rgba(244, 67, 54, 0.2)', // Add direct border styling
+        },
+      },
+      muiTableHeadCellProps: {
+        sx: {
+          fontWeight: 'bold',
+          borderRight: '1px solid rgba(244, 67, 54, 0.3)', // Add direct border styling
         },
       },
     },
@@ -512,32 +539,43 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
       
       {/* Add custom styles for the table borders */}
       <style jsx global>{`
-        /* More specific selector to ensure styles are applied */
-        .dynamic-table-with-borders .MuiTable-root .MuiTableCell-root {
-          border-right: 1px solid rgba(244, 67, 54, 0.2) !important; /* Light red border with !important */
+        /* Apply borders directly to cells */
+        .MuiTableCell-root {
+          border-right: 1px solid rgba(244, 67, 54, 0.2) !important;
         }
         
-        .dynamic-table-with-borders .MuiTable-root .MuiTableCell-root:last-child {
+        .MuiTableHead-root .MuiTableCell-root {
+          border-right: 1px solid rgba(244, 67, 54, 0.3) !important;
+        }
+        
+        .MuiTableCell-root:last-child {
           border-right: none !important;
         }
         
-        .dynamic-table-with-borders .MuiTable-root .MuiTableHead-root .MuiTableCell-root {
-          border-right: 1px solid rgba(244, 67, 54, 0.3) !important; /* Slightly darker red for headers */
+        /* Ensure proper table layout */
+        .MuiTable-root {
+          table-layout: fixed !important;
+          width: 100% !important;
+          border-collapse: separate !important;
+          border-spacing: 0 !important;
         }
         
-        /* Add vertical borders that span the full height */
-        .dynamic-table-with-borders .MuiTable-root {
-          border-collapse: separate;
-          border-spacing: 0;
+        /* Adjust cell padding and text handling */
+        .MuiTableCell-root {
+          padding: 8px !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
         }
         
-        /* Ensure content is properly aligned and doesn't have excessive whitespace */
-        .dynamic-table-with-borders .MuiTableCell-root {
-          padding-left: 8px !important;
-          padding-right: 8px !important;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
+        /* Allow text wrapping in body cells */
+        .MuiTableBody-root .MuiTableCell-root {
+          white-space: normal !important;
+          word-wrap: break-word !important;
+        }
+        
+        /* Keep header cells with nowrap */
+        .MuiTableHead-root .MuiTableCell-root {
+          white-space: nowrap !important;
         }
       `}</style>
     </Box>
