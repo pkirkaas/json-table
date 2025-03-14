@@ -391,7 +391,8 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
       sx: {
         width: '100%',
         tableLayout: 'auto', // Change to 'auto' to better respect content width
-      }
+      },
+      className: "dynamic-table-with-borders"
     },
     
     // Update default column settings
@@ -507,12 +508,7 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
           {title}
         </Typography>
       )}
-      <MaterialReactTable 
-        table={table} 
-        muiTableProps={{
-          className: "dynamic-table-with-borders"
-        }}
-      />
+      <MaterialReactTable table={table} />
       
       {/* Add custom styles for the table borders */}
       <style jsx global>{`
