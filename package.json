@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "test": "tsc",
     "clean": "rm -rf ./dist ./node_modules package-lock.json &&  npm i && tsc",
     "lint": "next lint"
   },
