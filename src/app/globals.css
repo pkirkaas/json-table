@@ -24,3 +24,13 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/*
+table {
+  border-collapse: collapse !important;
+  border: solid red 1px !important;
+}
+td, th {
+  border: solid red 1px !important;
+}
+*/

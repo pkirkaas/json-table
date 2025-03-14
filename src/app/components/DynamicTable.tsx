@@ -15,6 +15,8 @@ import {
 import { Box, Chip, Typography, Tooltip } from '@mui/material';
 import { format } from 'date-fns';
 
+import {JSON5,} from 'pk-ts-common-lib';
+
 /**
  * Props for the DynamicTable component
  * @typedef {Object} DynamicTableProps
@@ -142,7 +144,7 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
           {value.map((item, index) => (
             <Tooltip 
               key={index} 
-              title={typeof item === 'object' ? JSON.stringify(item, null, 2) : String(item)}
+              title={typeof item === 'object' ? JSON5.stringify(item, null, 2) : String(item)}
               arrow
             >
               <Chip 
@@ -160,7 +162,7 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
 
     // Handle objects
     if (typeof value === 'object' && value !== null) {
-      const stringified = JSON.stringify(value, null, 2);
+      const stringified = JSON5.stringify(value, null, 2);
       const preview = Object.keys(value).length > 0 
         ? `{${Object.keys(value).slice(0, 2).map(k => `${k}: ${typeof value[k] === 'object' ? '...' : value[k]}`).join(', ')}${Object.keys(value).length > 2 ? ', ...' : ''}}`
         : '{}';
@@ -251,7 +253,7 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
     return (value: any): boolean => {
       if (value === null || value === undefined) return false;
       
-      const stringified = JSON.stringify(value).toLowerCase();
+      const stringified = JSON5.stringify(value).toLowerCase();
       return stringified.includes(filterValue.toLowerCase());
     };
   };
@@ -288,7 +290,7 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
           val === null || val === undefined 
             ? 0 
             : (typeof val === 'object' 
-                ? JSON.stringify(val).length * 5 
+                ? JSON5.stringify(val).length * 5 
                 : String(val).length * 8)
         )
       );
@@ -316,7 +318,7 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
           ? (rowA, rowB, columnId) => {
               const valueA = rowA.getValue(columnId) ?? {};
               const valueB = rowB.getValue(columnId) ?? {};
-              return JSON.stringify(valueA).localeCompare(JSON.stringify(valueB));
+              return JSON5.stringify(valueA).localeCompare(JSON5.stringify(valueB));
             }
           : 'alphanumeric', // Use built-in sorter for primitives and null
         // Updated sizing properties with content-based estimation
@@ -432,7 +434,7 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
             fontSize: '0.875rem',
           }}
         >
-          {JSON.stringify(row.original, null, 2)}
+          {JSON5.stringify(row.original, null, 2)}
         </Box>
       </Box>
     ),
