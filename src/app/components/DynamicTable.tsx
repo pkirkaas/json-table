@@ -265,19 +265,13 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
           (row, id, filterValue) => createObjectFilterFn(filterValue)(row.getValue(id)) :
           undefined,
         // Custom sort function for object/array values
-        sortingFn: (sampleValue !== null && typeof sampleValue === 'object') ? 
-          (rowA, rowB, columnId) => {
-            const valueA = rowA.getValue(columnId);
-            const valueB = rowB.getValue(columnId);
-            
-            // Handle null/undefined consistently
-            if (valueA === null || valueA === undefined) return valueB !== null ? 1 : 0;
-            if (valueB === null || valueB === undefined) return -1;
-            
-            // Compare stringified objects
-            return JSON.stringify(valueA).localeCompare(JSON.stringify(valueB));
-          } : 
-          'alphanumeric', // Use built-in sorter for primitives and null
+        sortingFn: (sampleValue !== null && typeof sampleValue === 'object' && !Array.isArray(sampleValue)) 
+          ? (rowA, rowB, columnId) => {
+              const valueA = rowA.getValue(columnId) ?? {};
+              const valueB = rowB.getValue(columnId) ?? {};
+              return JSON.stringify(valueA).localeCompare(JSON.stringify(valueB));
+            }
+          : 'alphanumeric', // Use built-in sorter for primitives and null
         // Set minimum width for columns
         minSize: 150,
       };
