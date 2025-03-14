@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import "./globals.css";
 
 const geistSans = Geist({
@@ -27,7 +29,9 @@ export default function RootLayout({
       <body
         className={`outline outline-1 ${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+          {children}
+        </LocalizationProvider>
       </body>
     </html>
   );
