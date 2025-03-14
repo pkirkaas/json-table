@@ -302,6 +302,15 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
         overflow: 'auto'
       } 
     },
+    muiTablePaperProps: { 
+      sx: { 
+        flex: 1,
+        minHeight: 0,
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column'
+      }
+    },
     state: {
       columnVisibility,
       columnFilters,
@@ -399,13 +408,7 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
           {title}
         </Typography>
       )}
-      <MaterialReactTable 
-        table={table} 
-        sx={{
-          flex: 1,
-          minHeight: 0,
-        }}
-      />
+      <MaterialReactTable table={table} />
     </Box>
   );
 };
