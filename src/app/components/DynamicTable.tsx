@@ -278,11 +278,16 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
    * @returns {function} A filter function for date ranges
    */
   const createDateRangeFilterFn = (filterValues: [string, string]) => {
+    // Ensure filterValues is always an array with two string elements (even if empty strings)
+    const safeFilterValues: [string, string] = Array.isArray(filterValues) 
+      ? [filterValues[0] || '', filterValues[1] || ''] 
+      : ['', ''];
+    
     return (value: any): boolean => {
       if (value === null || value === undefined || !isUnixTimestamp(value)) return false;
       
       const timestamp = value * 1000; // Convert Unix timestamp to milliseconds
-      const [minDate, maxDate] = filterValues;
+      const [minDate, maxDate] = safeFilterValues;
       
       // If min date is provided, check if value is after or equal to min date
       if (minDate) {
@@ -339,7 +344,13 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
         filterFn: typeof sampleValue === 'object' 
           ? (row, id, filterValue) => createObjectFilterFn(filterValue)(row.getValue(id))
           : isUnixTimestamp(sampleValue)
-            ? (row, id, filterValues) => createDateRangeFilterFn(filterValues as [string, string])(row.getValue(id))
+            ? (row, id, filterValues) => {
+                // Ensure filterValues is always properly initialized
+                const safeFilterValues: [string, string] = Array.isArray(filterValues) 
+                  ? [filterValues[0] || '', filterValues[1] || ''] 
+                  : ['', ''];
+                return createDateRangeFilterFn(safeFilterValues)(row.getValue(id));
+              }
             : undefined,
         // Custom sort function for object/array values
         sortingFn: (sampleValue !== null && typeof sampleValue === 'object' && !Array.isArray(sampleValue))
