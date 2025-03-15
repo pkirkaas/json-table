@@ -242,7 +242,7 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
     }
 
     if (typeof sampleValue === 'number') {
-      return isUnixTimestamp(sampleValue) ? 'date' : 'range';
+      return isUnixTimestamp(sampleValue) ? 'date-range' : 'range';
     }
 
     if (typeof sampleValue === 'boolean') {
@@ -268,6 +268,35 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
 
       const stringified = JSON5.stringify(value).toLowerCase();
       return stringified.includes(filterValue.toLowerCase());
+    };
+  };
+
+  /**
+   * Creates a filter function for Unix timestamp date ranges
+   * 
+   * @param {[string, string]} filterValues - The min and max date values to filter by
+   * @returns {function} A filter function for date ranges
+   */
+  const createDateRangeFilterFn = (filterValues: [string, string]) => {
+    return (value: any): boolean => {
+      if (value === null || value === undefined || !isUnixTimestamp(value)) return false;
+      
+      const timestamp = value * 1000; // Convert Unix timestamp to milliseconds
+      const [minDate, maxDate] = filterValues;
+      
+      // If min date is provided, check if value is after or equal to min date
+      if (minDate) {
+        const minTimestamp = new Date(minDate).getTime();
+        if (timestamp < minTimestamp) return false;
+      }
+      
+      // If max date is provided, check if value is before or equal to max date
+      if (maxDate) {
+        const maxTimestamp = new Date(maxDate).getTime();
+        if (timestamp > maxTimestamp) return false;
+      }
+      
+      return true;
     };
   };
 
@@ -306,10 +335,12 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
         enableColumnFilter: true,
         enableSorting: true,
         enableResizing: true,
-        // Custom filter function for object/array values
-        filterFn: typeof sampleValue === 'object' ?
-          (row, id, filterValue) => createObjectFilterFn(filterValue)(row.getValue(id)) :
-          undefined,
+        // Custom filter function for object/array values or date ranges
+        filterFn: typeof sampleValue === 'object' 
+          ? (row, id, filterValue) => createObjectFilterFn(filterValue)(row.getValue(id))
+          : isUnixTimestamp(sampleValue)
+            ? (row, id, filterValues) => createDateRangeFilterFn(filterValues as [string, string])(row.getValue(id))
+            : undefined,
         // Custom sort function for object/array values
         sortingFn: (sampleValue !== null && typeof sampleValue === 'object' && !Array.isArray(sampleValue))
           ? (rowA, rowB, columnId) => {
