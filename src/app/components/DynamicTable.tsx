@@ -1,5 +1,5 @@
 // src/components/DynamicTable.tsx
-'use client' 
+'use client';
 import React, { useMemo, useState, useEffect, useLayoutEffect, ReactElement } from 'react';
 import {
   MaterialReactTable,
@@ -15,7 +15,7 @@ import {
 import { Box, Chip, Typography, Tooltip } from '@mui/material';
 import { format } from 'date-fns';
 
-import {JSON5,} from 'pk-ts-common-lib';
+import { JSON5, } from 'pk-ts-common-lib';
 
 /**
  * Props for the DynamicTable component
@@ -39,20 +39,20 @@ interface DynamicTableProps {
 }
 
 // Define valid filter variant types
-type FilterVariantType = 
-  | 'select' 
-  | 'text' 
-  | 'autocomplete' 
-  | 'checkbox' 
-  | 'date' 
-  | 'date-range' 
-  | 'datetime' 
-  | 'datetime-range' 
-  | 'multi-select' 
-  | 'range' 
-  | 'range-slider' 
-  | 'time' 
-  | 'time-range' 
+type FilterVariantType =
+  | 'select'
+  | 'text'
+  | 'autocomplete'
+  | 'checkbox'
+  | 'date'
+  | 'date-range'
+  | 'datetime'
+  | 'datetime-range'
+  | 'multi-select'
+  | 'range'
+  | 'range-slider'
+  | 'time'
+  | 'time-range'
   | undefined;
 
 /**
@@ -146,20 +146,20 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
       if (value.length === 0) {
         return <Typography variant="body2">[]</Typography>;
       }
-      
+
       return (
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
           {value.map((item, index) => (
-            <Tooltip 
-              key={index} 
+            <Tooltip
+              key={index}
               title={typeof item === 'object' ? JSON5.stringify(item, null, 2) : String(item)}
               arrow
             >
-              <Chip 
-                label={typeof item === 'object' ? 
-                  (Array.isArray(item) ? `Array(${item.length})` : 'Object') : 
-                  String(item)} 
-                size="small" 
+              <Chip
+                label={typeof item === 'object' ?
+                  (Array.isArray(item) ? `Array(${item.length})` : 'Object') :
+                  String(item)}
+                size="small"
                 sx={{ maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis' }}
               />
             </Tooltip>
@@ -171,17 +171,17 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
     // Handle objects
     if (typeof value === 'object' && value !== null) {
       const stringified = JSON5.stringify(value, null, 2);
-      const preview = Object.keys(value).length > 0 
+      const preview = Object.keys(value).length > 0
         ? `{${Object.keys(value).slice(0, 2).map(k => `${k}: ${typeof value[k] === 'object' ? '...' : value[k]}`).join(', ')}${Object.keys(value).length > 2 ? ', ...' : ''}}`
         : '{}';
-        
+
       return (
         <Tooltip title={<pre style={{ whiteSpace: 'pre-wrap' }}>{stringified}</pre>} arrow>
-          <Typography 
-            variant="body2" 
-            sx={{ 
-              maxWidth: '100%', 
-              overflow: 'hidden', 
+          <Typography
+            variant="body2"
+            sx={{
+              maxWidth: '100%',
+              overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
               cursor: 'pointer',
@@ -204,11 +204,11 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
     const stringValue = String(value);
     return (
       <Tooltip title={stringValue} arrow>
-        <Typography 
-          variant="body2" 
-          sx={{ 
+        <Typography
+          variant="body2"
+          sx={{
             maxWidth: '100%',
-            overflow: 'hidden', 
+            overflow: 'hidden',
             textOverflow: 'ellipsis',
             // Change from nowrap to normal to allow wrapping
             whiteSpace: 'normal',
@@ -265,7 +265,7 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
   const createObjectFilterFn = (filterValue: string) => {
     return (value: any): boolean => {
       if (value === null || value === undefined) return false;
-      
+
       const stringified = JSON5.stringify(value).toLowerCase();
       return stringified.includes(filterValue.toLowerCase());
     };
@@ -274,55 +274,55 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
   // Dynamically generate columns from the data
   const columns = useMemo<MRT_ColumnDef<Record<string, any>>[]>(() => {
     if (!data || data.length === 0) return [];
-    
+
     const firstRow = data[0];
     const keys = Object.keys(firstRow);
-    
+
     // Use fixed values for initial render to avoid hydration mismatches
     const defaultColumnWidth = 150;
     const minColumnWidth = 80;
     const maxColumnWidth = 300;
-    
+
     return keys.map((key) => {
       // Find first non-null value for this column to determine type
       const sampleValue = data.find(row => row[key] !== null && row[key] !== undefined)?.[key] ?? firstRow[key];
       const filterVariant = getFilterVariant(key, sampleValue);
-      
+
       // Format header from camelCase/snake_case to Title Case
       const header = key
         .replace(/_/g, ' ')
         .replace(/([A-Z])/g, ' $1')
         .replace(/^./, str => str.toUpperCase())
         .trim();
-      
+
       // Use fixed size for initial render to ensure hydration consistency
       const estimatedSize = defaultColumnWidth;
-      
+
       return {
         accessorKey: key,
         header,
-        Cell: ({ cell }: { cell: MRT_Cell<Record<string, any>, unknown> }) => renderCellValue(cell.getValue()),
+        Cell: ({ cell }: { cell: MRT_Cell<Record<string, any>, unknown>; }) => renderCellValue(cell.getValue()),
         filterVariant,
         enableColumnFilter: true,
         enableSorting: true,
         enableResizing: true,
         // Custom filter function for object/array values
-        filterFn: typeof sampleValue === 'object' ? 
+        filterFn: typeof sampleValue === 'object' ?
           (row, id, filterValue) => createObjectFilterFn(filterValue)(row.getValue(id)) :
           undefined,
         // Custom sort function for object/array values
-        sortingFn: (sampleValue !== null && typeof sampleValue === 'object' && !Array.isArray(sampleValue)) 
+        sortingFn: (sampleValue !== null && typeof sampleValue === 'object' && !Array.isArray(sampleValue))
           ? (rowA, rowB, columnId) => {
-              const valueA = rowA.getValue(columnId) ?? {};
-              const valueB = rowB.getValue(columnId) ?? {};
-              return JSON5.stringify(valueA).localeCompare(JSON5.stringify(valueB));
-            }
+            const valueA = rowA.getValue(columnId) ?? {};
+            const valueB = rowB.getValue(columnId) ?? {};
+            return JSON5.stringify(valueA).localeCompare(JSON5.stringify(valueB));
+          }
           : 'alphanumeric', // Use built-in sorter for primitives and null
         // Updated sizing properties with stricter limits
         minSize: minColumnWidth,
         maxSize: maxColumnWidth * 2, // Allow resizing to be larger, but not excessive
         size: estimatedSize,
-        
+
         // Update cell props to handle wrapping
         muiTableHeadCellProps: {
           sx: {
@@ -364,21 +364,21 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
     enablePagination: true,
     enableBottomToolbar: true,
     enableTopToolbar: true,
-    
+
     // Change layout mode to 'grid' for better width control
     layoutMode: 'grid',
-    
-    muiTableContainerProps: { 
-      sx: { 
+
+    muiTableContainerProps: {
+      sx: {
         height: '100%',
         maxHeight: 'none',
         overflow: 'auto',
         width: '100%',
         maxWidth: '100%', // Ensure table doesn't exceed container
-      } 
+      }
     },
-    muiTablePaperProps: { 
-      sx: { 
+    muiTablePaperProps: {
+      sx: {
         flex: 1,
         minHeight: 0,
         height: '100%',
@@ -399,13 +399,13 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
       },
       className: "dynamic-table-with-borders"
     },
-    
+
     // Update default column settings
     defaultColumn: {
       minSize: 80,
       maxSize: 500,
       size: 150,
-      
+
       // Add cell props to all columns for better text handling and borders
       muiTableBodyCellProps: {
         sx: {
@@ -436,11 +436,11 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
     renderDetailPanel: ({ row }) => (
       <Box sx={{ p: 2 }}>
         <Typography variant="h6">Full Data:</Typography>
-        <Box 
-          component="pre" 
-          sx={{ 
-            backgroundColor: '#f5f5f5', 
-            p: 2, 
+        <Box
+          component="pre"
+          sx={{
+            backgroundColor: '#f5f5f5',
+            p: 2,
             borderRadius: '4px',
             overflow: 'auto',
             maxHeight: '300px',
@@ -461,6 +461,25 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
         header: 'Actions',
         size: 100,
       },
+      'mrt-row-expand': {
+        header: '',
+        size: 30, // Fixed small width
+        minSize: 30, // Prevent resizing smaller
+        maxSize: 30, // Prevent resizing larger
+        muiTableHeadCellProps: {
+          align: 'center',
+          sx: {
+            padding: '4px',
+          },
+        },
+        muiTableBodyCellProps: {
+          align: 'center',
+          sx: {
+            padding: '4px',
+          },
+        },
+      },
+
     },
     positionActionsColumn: 'last',
     enableRowActions: false,
@@ -515,7 +534,7 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
       const availableWidth = window.innerWidth - 100;
       const keys = data && data.length > 0 ? Object.keys(data[0]) : [];
       const maxColumnWidth = Math.min(300, Math.floor(availableWidth / keys.length));
-      
+
       // Update column sizes
       table.setColumnSizing((prev) => {
         const newSizing = { ...prev };
@@ -525,15 +544,15 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
             const headerLength = String(column.header).length * 10;
             const contentSamples = data.slice(0, 10).map(row => row[column.accessorKey as string]);
             const contentMaxLength = Math.max(
-              ...contentSamples.map(val => 
-                val === null || val === undefined 
-                  ? 0 
-                  : (typeof val === 'object' 
-                      ? JSON5.stringify(val).length * 5 
-                      : String(val).length * 8)
+              ...contentSamples.map(val =>
+                val === null || val === undefined
+                  ? 0
+                  : (typeof val === 'object'
+                    ? JSON5.stringify(val).length * 5
+                    : String(val).length * 8)
               )
             );
-            
+
             const calculatedSize = Math.min(
               Math.max(
                 Math.min(headerLength, 200),
@@ -542,7 +561,7 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
               ),
               maxColumnWidth
             );
-            
+
             newSizing[column.accessorKey] = calculatedSize;
           }
         });
@@ -552,7 +571,7 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
   }, [hasMounted, columns, table, data]);
 
   return (
-    <Box sx={{ 
+    <Box sx={{
       width: '100%',
       height: '100%',
       display: 'flex',
@@ -564,7 +583,7 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
         </Typography>
       )}
       <MaterialReactTable table={table} />
-      
+
       {/* Add custom styles for the table borders */}
       <style jsx global>{`
         /* Apply borders directly to cells */
