@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { DynamicTable } from "@/app/components/DynamicTable";
 import { openrouterModels } from "@/data/openrouter-models";
 
