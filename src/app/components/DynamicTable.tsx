@@ -1,6 +1,6 @@
 // src/components/DynamicTable.tsx
 'use client' 
-import React, { useMemo, useState, ReactElement } from 'react';
+import React, { useMemo, useState, useEffect, useLayoutEffect, ReactElement } from 'react';
 import {
   MaterialReactTable,
   useMaterialReactTable,
@@ -67,6 +67,14 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
   if (!data || data.length === 0) {
     return <Typography variant="body1">No data available</Typography>;
   }
+
+  // Track if component has mounted (client-side)
+  const [hasMounted, setHasMounted] = useState(false);
+
+  // Set hasMounted to true after initial render
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
   // State for table features
   const [columnVisibility, setColumnVisibility] = useState<MRT_VisibilityState>(
@@ -270,11 +278,10 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
     const firstRow = data[0];
     const keys = Object.keys(firstRow);
     
-    // Calculate a reasonable default size for each column based on available space
-    // Assume a minimum width per column, but distribute space evenly
-    const availableWidth = typeof window !== 'undefined' ? window.innerWidth - 100 : 1200; // Approximate available width
-    const maxColumnWidth = Math.min(300, Math.floor(availableWidth / keys.length));
+    // Use fixed values for initial render to avoid hydration mismatches
+    const defaultColumnWidth = 150;
     const minColumnWidth = 80;
+    const maxColumnWidth = 300;
     
     return keys.map((key) => {
       // Find first non-null value for this column to determine type
@@ -288,30 +295,8 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
         .replace(/^./, str => str.toUpperCase())
         .trim();
       
-      // Estimate a reasonable column width based on content and header
-      const headerLength = header.length * 10; // Approximate pixel width
-      
-      // Sample some values to estimate content width
-      const contentSamples = data.slice(0, 10).map(row => row[key]);
-      const contentMaxLength = Math.max(
-        ...contentSamples.map(val => 
-          val === null || val === undefined 
-            ? 0 
-            : (typeof val === 'object' 
-                ? JSON5.stringify(val).length * 5 
-                : String(val).length * 8)
-        )
-      );
-      
-      // Cap the estimated size more aggressively
-      const estimatedSize = Math.min(
-        Math.max(
-          Math.min(headerLength, 200), // Cap header length
-          Math.min(contentMaxLength, 250), // Cap content length
-          minColumnWidth
-        ),
-        maxColumnWidth // Enforce max width based on available space
-      );
+      // Use fixed size for initial render to ensure hydration consistency
+      const estimatedSize = defaultColumnWidth;
       
       return {
         accessorKey: key,
@@ -522,6 +507,49 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data, title, initial
 
   // Create the table
   const table = useMaterialReactTable(tableOptions);
+
+  // After hydration, recalculate column widths based on available space
+  useLayoutEffect(() => {
+    if (hasMounted && table) {
+      // Only run this on the client after hydration
+      const availableWidth = window.innerWidth - 100;
+      const keys = data && data.length > 0 ? Object.keys(data[0]) : [];
+      const maxColumnWidth = Math.min(300, Math.floor(availableWidth / keys.length));
+      
+      // Update column sizes
+      table.setColumnSizing((prev) => {
+        const newSizing = { ...prev };
+        columns.forEach((column) => {
+          if (column.accessorKey) {
+            // Calculate a more appropriate size based on content
+            const headerLength = String(column.header).length * 10;
+            const contentSamples = data.slice(0, 10).map(row => row[column.accessorKey as string]);
+            const contentMaxLength = Math.max(
+              ...contentSamples.map(val => 
+                val === null || val === undefined 
+                  ? 0 
+                  : (typeof val === 'object' 
+                      ? JSON5.stringify(val).length * 5 
+                      : String(val).length * 8)
+              )
+            );
+            
+            const calculatedSize = Math.min(
+              Math.max(
+                Math.min(headerLength, 200),
+                Math.min(contentMaxLength, 250),
+                80 // minColumnWidth
+              ),
+              maxColumnWidth
+            );
+            
+            newSizing[column.accessorKey] = calculatedSize;
+          }
+        });
+        return newSizing;
+      });
+    }
+  }, [hasMounted, columns, table, data]);
 
   return (
     <Box sx={{ 
