@@ -10,6 +10,13 @@ let initialState = {
     createdAt: false,
     random:false,
   },
+  // Add sorting configuration to sort by 'created' in descending order
+  sorting: [
+    {
+      id: 'created',
+      desc: true
+    }
+  ],
 };
 
 export default function Home() {
