@@ -7,6 +7,7 @@ let initialState = {
     per_request_limits: false,
     top_provider: false,
     createdAt: false,
+    pricing:false,
     random:false,
   },
   // Add sorting configuration to sort by 'created' in descending order
